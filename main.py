@@ -18,6 +18,9 @@ class LoginRequest(BaseModel):
 USERNAME = os.environ.get("USERNAME")
 PASSWORD = os.environ.get("PASSWORD")
 SECRET = os.environ.get("SECRET")
+if USERNAME is None or PASSWORD is None or SECRET is None:
+    raise Exception(
+        "The USERNAME, PASSWORD and SECRET environment variables must be set.")
 
 app = FastAPI()
 
@@ -93,7 +96,7 @@ async def get_time(authorization: str | None = Header(default=None)):
 @app.post("/login")
 async def login(req: LoginRequest) -> str | None:
     """
-    Log in as a user. Takes a JSON document containing the fields "username" and "password". Returns a signed JWT token that can be provided to access certain functionality - see the documentation for GET /time.
+    Log in as a user. Takes a JSON document containing the fields "username" and "password". On success, returns a signed JWT token that can be provided to access certain functionality - see the documentation for GET /time. Returns null on failure.
     """
     if req.username == USERNAME and req.password == PASSWORD:
         return jwt.encode({"user": req.username, "privileges": "get_time"}, SECRET)
