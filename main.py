@@ -1,3 +1,4 @@
+import os
 import cv2
 import jwt
 import sympy
@@ -13,6 +14,10 @@ class LoginRequest(BaseModel):
     username: str
     password: str
 
+
+USERNAME = os.environ.get("USERNAME")
+PASSWORD = os.environ.get("PASSWORD")
+SECRET = os.environ.get("SECRET")
 
 app = FastAPI()
 
@@ -75,7 +80,7 @@ async def get_time(authorization: str | None = Header(default=None)):
     authorization = authorization[7:]
     try:
         claims = jwt.decode(
-            authorization, "TOP SEEKRIT DONUT STEEL", algorithms=["HS256"])
+            authorization, SECRET, algorithms=["HS256"])
     except:
         raise HTTPException(status_code=HTTPStatus.BAD_REQUEST,
                             detail="The authorization token provided was malformed or forged and could not be decoded.")
@@ -90,6 +95,6 @@ async def login(req: LoginRequest) -> str | None:
     """
     Log in as a user. Takes a JSON document containing the fields "username" and "password". Returns a signed JWT token that can be provided to access certain functionality - see the documentation for GET /time.
     """
-    if req.username == "EXAMPLE_USER" and req.password == "EXAMPLE_PASSWORD":
-        return jwt.encode({"user": "EXAMPLE_USER", "privileges": "get_time"}, "TOP SEEKRIT DONUT STEEL")
+    if req.username == USERNAME and req.password == PASSWORD:
+        return jwt.encode({"user": req.username, "privileges": "get_time"}, SECRET)
     return None
