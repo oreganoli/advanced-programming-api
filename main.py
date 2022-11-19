@@ -19,11 +19,23 @@ app = FastAPI()
 
 @app.get("/prime/{num}")
 async def is_prime(num: int) -> bool:
+    """
+    Given an integer, check whether it is a prime number.
+    Takes an integer as a query parameter and returns a JSON bool.
+    """
+    if num > 9223372036854775803:
+        raise HTTPException(status_code=HTTPStatus.UNPROCESSABLE_ENTITY,
+                            detail="Only numbers up to 9223372036854775803 are supported.")
     return sympy.isprime(num)
 
 
 @app.post("/picture/invert")
 async def invert(file: UploadFile) -> Response:
+    """
+    Invert an image.
+    Takes a "file" field in a multipart form and returns an output image file.
+    Only JPEG images of a size up to 12 megapixels are allowed.
+    """
     if file.content_type != "image/jpeg":
         raise HTTPException(status_code=HTTPStatus.UNSUPPORTED_MEDIA_TYPE,
                             detail="Only JPEG images are supported.")
@@ -52,9 +64,15 @@ async def invert(file: UploadFile) -> Response:
 
 @app.get("/time")
 async def get_time(authorization: str | None = Header(default=None)):
-    if authorization is None:
+    """
+    Get the current time as an UTC Unix timestamp.
+    Requires an authorization token to be provided in the Authorization header with the prefix "Bearer ".
+    For details, see the documentation for POST /login.
+    """
+    if authorization is None or not authorization.startswith("Bearer "):
         raise HTTPException(status_code=HTTPStatus.UNAUTHORIZED,
-                            detail="No authorization was provided.")
+                            detail="No authorization was provided or it was not a Bearer token.")
+    authorization = authorization[7:]
     try:
         claims = jwt.decode(
             authorization, "TOP SEEKRIT DONUT STEEL", algorithms=["HS256"])
@@ -69,6 +87,9 @@ async def get_time(authorization: str | None = Header(default=None)):
 
 @app.post("/login")
 async def login(req: LoginRequest) -> str | None:
+    """
+    Log in as a user. Takes a JSON document containing the fields "username" and "password". Returns a signed JWT token that can be provided to access certain functionality - see the documentation for GET /time.
+    """
     if req.username == "EXAMPLE_USER" and req.password == "EXAMPLE_PASSWORD":
         return jwt.encode({"user": "EXAMPLE_USER", "privileges": "get_time"}, "TOP SEEKRIT DONUT STEEL")
     return None
