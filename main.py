@@ -22,7 +22,7 @@ async def is_prime(num: int) -> bool:
     return sympy.isprime(num)
 
 
-@app.post("/invert")
+@app.post("/picture/invert")
 async def invert(file: UploadFile) -> Response:
     if file.content_type != "image/jpeg":
         raise HTTPException(status_code=HTTPStatus.UNSUPPORTED_MEDIA_TYPE,
