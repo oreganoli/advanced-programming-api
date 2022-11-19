@@ -6,7 +6,7 @@ import numpy as np
 import time
 from http import HTTPStatus
 from fastapi import FastAPI, Header, UploadFile, HTTPException
-from fastapi.responses import Response
+from fastapi.responses import Response, RedirectResponse
 from pydantic import BaseModel
 
 
@@ -71,19 +71,18 @@ async def invert(file: UploadFile) -> Response:
 
 
 @app.get("/time")
-async def get_time(authorization: str | None = Header(default=None)):
+async def get_time(x_token: str | None = Header(default=None)):
     """
     Get the current time as an UTC Unix timestamp.
-    Requires an authorization token to be provided in the Authorization header with the prefix "Bearer ".
+    Requires an authorization token to be provided in the X-Token header.
     For details, see the documentation for POST /login.
     """
-    if authorization is None or not authorization.startswith("Bearer "):
+    if x_token is None:
         raise HTTPException(status_code=HTTPStatus.UNAUTHORIZED,
-                            detail="No authorization was provided or it was not a Bearer token.")
-    authorization = authorization[7:]
+                            detail="No authorization was provided.")
     try:
         claims = jwt.decode(
-            authorization, SECRET, algorithms=["HS256"])
+            x_token, SECRET, algorithms=["HS256"])
     except:
         raise HTTPException(status_code=HTTPStatus.BAD_REQUEST,
                             detail="The authorization token provided was malformed or forged and could not be decoded.")
@@ -101,3 +100,8 @@ async def login(req: LoginRequest) -> str | None:
     if req.username == USERNAME and req.password == PASSWORD:
         return jwt.encode({"user": req.username, "privileges": "get_time"}, SECRET)
     return None
+
+
+@app.get("/")
+async def index() -> RedirectResponse:
+    return RedirectResponse("/docs")
