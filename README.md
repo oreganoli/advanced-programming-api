@@ -7,4 +7,4 @@ Features:
 - JWT-guarded Unix timestamp retrieval
 
 ## Live instance
-A live, deployed instance of the app, complete with an OpenAPI documentation UI, is available at https://white-silence-4963.fly.dev/.
+A live, deployed instance of the app, complete with an OpenAPI documentation UI, ~~is available at https://white-silence-4963.fly.dev/~~ is no longer available, as I have passed the course and have no further use for it.
